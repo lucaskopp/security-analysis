@@ -13,7 +13,9 @@ enum Route {
 
 fn switch(routes: Route) -> Html {
     match routes {
-        Route::Home => html! { <h1>{ "Hello Frontend" }</h1> },
+        Route::Home => {
+            html! { <h1 class={classes!("column", "is-half")}>{ "Hello Frontend" }</h1> }
+        }
         Route::HelloServer => html! { <HelloServer /> },
     }
 }
@@ -21,9 +23,13 @@ fn switch(routes: Route) -> Html {
 #[function_component(App)]
 fn app() -> Html {
     html! {
-        <BrowserRouter>
-            <Switch<Route> render={switch} />
-        </BrowserRouter>
+        <div class={classes!("container")}>
+            <div class={classes!("columns", "is-centered")}>
+                <BrowserRouter>
+                    <Switch<Route> render={switch} />
+                </BrowserRouter>
+            </div>
+        </div>
     }
 }
 

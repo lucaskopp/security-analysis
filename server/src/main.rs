@@ -2,6 +2,9 @@ use axum::body::{boxed, Body};
 use axum::http::{Response, StatusCode};
 use axum::{response::IntoResponse, routing::get, Router};
 use clap::Parser;
+use once_cell::sync::Lazy;
+use stock::Stock;
+use tokio::sync::Mutex;
 use std::net::{IpAddr, Ipv6Addr, SocketAddr};
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -9,6 +12,17 @@ use tokio::fs;
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
+
+static CACHE: Lazy<Mutex<Vec<Stock>>> = Lazy::new(|| Mutex::new(cache::state_from_json()));
+
+mod cache;
+mod helper_functions;
+mod helper_structs;
+mod metrics;
+mod screener;
+mod statements;
+mod stock;
+mod utils;
 
 // Setup the command line interface with clap.
 #[derive(Parser, Debug)]
