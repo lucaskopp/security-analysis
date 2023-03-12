@@ -1,4 +1,4 @@
-use crate::{metrics::Metrics, statements::Statements, stock::Stock, CACHE};
+use crate::{metrics::Metrics, statements::Statements, stock::Stock, CACHE, other::Other};
 use tokio::sync::{MutexGuard, MappedMutexGuard};
 use std::{fs, ops::Deref};
 
@@ -14,6 +14,7 @@ pub async fn get_or_add_stock(symbol: String) -> MappedMutexGuard<'static, Stock
             ticker: symbol,
             statements: Statements::new(),
             metrics: Metrics::new(),
+            other: Other::new(),
         }).await,
     }
 }

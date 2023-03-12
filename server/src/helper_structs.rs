@@ -1,7 +1,9 @@
+use axum::Json;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-use crate::{statements::Statements, metrics::Metrics};
+use crate::stock::Stock;
+use crate::{metrics::Metrics, statements::Statements};
 
 // Use struct instead of tuple for better readability
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -10,6 +12,20 @@ pub enum TimePeriod {
     Quarter(u8),
     TTM(),
     NA(),
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct AvailableTraded {
+    pub symbol: String,
+    pub exchange_short_name: String,
+    pub type_: String,
+}
+
+#[derive(Debug)]
+pub struct ResponseCache {
+    pub endpoint: String,
+    pub data: Json<Vec<Stock>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -377,12 +393,44 @@ pub struct KeyMetricsTTM {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct AvailableTraded {
-    pub symbol: String,
-    pub exchange_short_name: String,
-    pub type_: String,
+pub struct Profile {
+    pub symbol: Option<String>,
+    pub price: Option<f64>,
+    pub beta: Option<f64>,
+    pub vol_avg: Option<f64>,
+    pub mkt_cap: Option<f64>,
+    pub last_div: Option<f64>,
+    pub range: Option<String>,
+    pub changes: Option<f64>,
+    pub company_name: Option<String>,
+    pub currency: Option<String>,
+    pub cik: Option<String>,
+    pub isin: Option<String>,
+    pub cusip: Option<String>,
+    pub exchange: Option<String>,
+    pub exchange_short_name: Option<String>,
+    pub industry: Option<String>,
+    pub website: Option<String>,
+    pub description: Option<String>,
+    pub ceo: Option<String>,
+    pub sector: Option<String>,
+    pub country: Option<String>,
+    pub full_time_employees: Option<String>,
+    pub phone: Option<String>,
+    pub address: Option<String>,
+    pub city: Option<String>,
+    pub state: Option<String>,
+    pub zip: Option<String>,
+    pub dcf_diff: Option<f64>,
+    pub dcf: Option<f64>,
+    pub image: Option<String>,
+    pub ipo_date: Option<String>,
+    pub default_image: Option<bool>,
+    pub is_etf: Option<bool>,
+    pub is_actively_trading: Option<bool>,
+    pub is_adr: Option<bool>,
+    pub is_fund: Option<bool>,
 }
-
 pub struct NeededData {
     pub income: (bool, TimePeriod),
     pub income_qtr: (bool, TimePeriod),

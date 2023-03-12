@@ -8,6 +8,7 @@ use std::time::Duration;
 use tokio::time;
 
 static mut COUNTER: u64 = 0;
+static mut ERROR_COUNTER: u64 = 0;
 
 async fn api_handler<T>(
     symbol: &String,
@@ -50,7 +51,7 @@ where
     let mut interval = time::interval(Duration::from_secs_f32(0.2));
 
     unsafe {
-        println!("{}   {}", COUNTER, url);
+        println!("{}-{}\t{}", COUNTER, ERROR_COUNTER, url);
         COUNTER += 1;
         interval.tick().await;
         interval.tick().await;
@@ -74,6 +75,9 @@ where
         }
         Err(e) => {
             println!("{}", e);
+            unsafe {
+                ERROR_COUNTER += 1;
+            }
         }
     }
 

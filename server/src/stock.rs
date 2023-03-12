@@ -1,9 +1,10 @@
 use crate::{
     helper_structs::{
-        BalanceSheetStatement, IncomeStatement, KeyMetrics, KeyMetricsTTM, NeededData, Ratios,
-        TimePeriod,
+        BalanceSheetStatement, CashFlowStatement, IncomeStatement, KeyMetrics, KeyMetricsTTM,
+        NeededData, Profile, Ratios, RatiosTTM, TimePeriod,
     },
     metrics::Metrics,
+    other::Other,
     statements::Statements,
 };
 
@@ -15,11 +16,12 @@ pub struct Stock {
     pub ticker: String,
     pub statements: Statements,
     pub metrics: Metrics,
+    pub other: Other,
 }
 
 impl Stock {
     pub fn set_cache_index(&mut self, index: Option<usize>) {
-      self.cache_index = index; 
+        self.cache_index = index;
     }
 
     pub async fn income(&mut self, period: TimePeriod) {
@@ -34,18 +36,48 @@ impl Stock {
             .await;
     }
 
+    pub async fn cash(&mut self, period: TimePeriod) {
+        self.statements
+            .fetch::<CashFlowStatement>(period, &self.ticker)
+            .await;
+    }
+
     pub async fn ratios(&mut self, period: TimePeriod) {
         self.metrics.fetch::<Ratios>(period, &self.ticker).await;
+    }
+
+    pub async fn ratios_ttm(&mut self) {
+        self.metrics
+            .fetch::<RatiosTTM>(TimePeriod::TTM(), &self.ticker)
+            .await;
     }
 
     pub async fn key_metrics(&mut self, period: TimePeriod) {
         self.metrics.fetch::<KeyMetrics>(period, &self.ticker).await;
     }
 
-    pub async fn key_metrics_ttm(&mut self, period: TimePeriod) {
+    pub async fn key_metrics_ttm(&mut self) {
         self.metrics
-            .fetch::<KeyMetricsTTM>(period, &self.ticker)
+            .fetch::<KeyMetricsTTM>(TimePeriod::TTM(), &self.ticker)
             .await;
+    }
+
+    pub async fn profile(&mut self) {
+        self.other.fetch::<Profile>(&self.ticker).await;
+    }
+
+    pub async fn get_all(&mut self) {
+        self.income(TimePeriod::Annual(10)).await;
+        self.income(TimePeriod::Quarter(8)).await;
+        self.balance(TimePeriod::Annual(10)).await;
+        self.balance(TimePeriod::Quarter(8)).await;
+        self.cash(TimePeriod::Annual(10)).await;
+        self.cash(TimePeriod::Quarter(8)).await;
+        self.ratios(TimePeriod::Annual(10)).await;
+        self.ratios_ttm().await;
+        self.key_metrics(TimePeriod::Annual(10)).await;
+        self.key_metrics_ttm().await;
+        self.profile().await;
     }
 
     pub async fn get_needed_data(&mut self, needed: NeededData) -> &mut Self {
@@ -66,7 +98,7 @@ impl Stock {
         }
 
         if needed.key_metrics_ttm.0 {
-            self.key_metrics_ttm(needed.key_metrics_ttm.1).await;
+            self.key_metrics_ttm().await;
         }
 
         self

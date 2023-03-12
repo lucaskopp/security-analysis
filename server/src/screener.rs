@@ -44,7 +44,7 @@ impl Screener {
     pub async fn buffetology_screener(&mut self) -> Vec<usize> {
         let mut passed = vec![];
         // self.stocks_to_screen.len()
-        for i in 0..100 {
+        for i in 0..250 {
             let stock = self.stocks_to_screen[i];
             if self.is_buffetology_stock(stock).await {
                 passed.push(stock.to_owned());
@@ -52,6 +52,20 @@ impl Screener {
         }
 
         passed
+    }
+
+    pub async fn index_everything(&mut self) {
+        // self.stocks_to_screen.len()
+        for i in 0..250 {
+            let mut cache = CACHE.lock().await;
+            let stock = cache.get_mut(self.stocks_to_screen[i]).unwrap();
+            let current_percent =
+                ((i as f64 + 1.0) / (250.0)) * 100.0;
+
+            stock.get_all().await;
+
+            println!("{}%", current_percent);
+        }
     }
 
     async fn is_buffetology_stock(&mut self, stock_index: usize) -> bool {
@@ -129,7 +143,7 @@ impl Screener {
             return false;
         }
 
-        stock.key_metrics_ttm(TimePeriod::TTM()).await;
+        stock.key_metrics_ttm().await;
         let key_metrics = &stock.metrics.ttm_key_metrics;
 
         if key_metrics.0.len() == 0 {

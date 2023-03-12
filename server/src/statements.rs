@@ -5,7 +5,6 @@ use crate::helper_structs::{
 use crate::utils::{needs_update_based_on_time, update_pull_stats};
 use serde::de::DeserializeOwned;
 
-use chrono::Utc;
 use core::fmt::Debug;
 use std::any::TypeId;
 
