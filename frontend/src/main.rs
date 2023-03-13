@@ -72,12 +72,10 @@ fn app() -> Html {
                         </nav>
                     </hgroup>
             </header>
-            <main class={classes!("container")}>
-                <section>
-                    <BrowserRouter>
-                        <Switch<Route> render={switch} />
-                    </BrowserRouter>
-                </section>
+            <main>
+                <BrowserRouter>
+                    <Switch<Route> render={switch} />
+                </BrowserRouter>
             </main>
         </>
     }
@@ -144,7 +142,7 @@ fn screeners_page() -> Html {
     };
 
     html! {
-        <section>
+        <section class={classes!("container")}>
             <h1>{"Screeners"}</h1>
             <ScreenCard screen={screen}></ScreenCard>
         </section>
@@ -192,7 +190,7 @@ fn screen_page(ScreenPageProps { name }: &ScreenPageProps) -> Html {
     match data.as_ref() {
         None => {
             html! {
-                <section>
+                <section class={classes!("container")}>
                     <h1>{name}</h1>
                     <progress></progress>
                 </section>
@@ -200,7 +198,7 @@ fn screen_page(ScreenPageProps { name }: &ScreenPageProps) -> Html {
         }
         Some(v) => {
             html! {
-                <section>
+                <section class={classes!("container")}>
                     <h1>{name}</h1>
                     <table role="grid">
                         <thead>

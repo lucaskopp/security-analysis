@@ -47,7 +47,7 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
     match data.as_ref() {
         None => {
             html! {
-                <section>
+                <section class={classes!("container")}>
                     <h1>{symbol}</h1>
                     <progress></progress>
                 </section>
@@ -60,15 +60,43 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                 .unwrap();
 
             let keys = vec![
-                "revenue",
+                "revenues",
                 "costOfRevenue",
                 "grossProfit",
                 "grossProfitRatio",
-                "researchAndDevelopementExpenses",
+                "researchAndDevelopmentExpenses",
                 "generalAndAdministrativeExpenses",
                 "sellingAndMarketingExpenses",
                 "sellingGeneralAndAdministrativeExpenses",
                 "otherExpenses",
+                "operatingExpenses",
+                "costAndExpenses",
+                "interestIncome",
+                "interestExpense",
+                "depreciationAndAmortization",
+                "ebitda",
+                "ebitdaratio",
+                "operatingIncome",
+                "operatingIncomeRatio",
+                "totalOtherIncomeExpensesNet",
+                "incomeBeforeTax",
+                "incomeBeforeTaxRatio",
+                "incomeTaxExpense",
+                "netIncome",
+                "netIncomeRatio",
+                "eps",
+                "dilutedEPS",
+                "weightedAverageShsOut",
+                "weightedAverageShsOutDil",
+            ];
+
+            let important = vec![
+                "revenues",
+                "grossProfit",
+                "operatingExpenses",
+                "operatingIncome",
+                "netIncome",
+                "dilutedEPS",
             ];
 
             let mut ac = Accounting::new_from("$", 2);
@@ -78,18 +106,22 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
 
             html! {
                 <>
-                    <section>
+                    <section class={classes!("container")}>
                         <section>
                             <h2>{ format!("{} ({})", other["profile"][0]["companyName"].as_str().unwrap(), symbol)} <span></span></h2>
                             <p><u>{"Industry: "}</u>{other["profile"][0]["industry"].as_str()}</p>
                         </section>
-                        <p>{other["profile"][0]["description"].as_str()}</p>
-                        <a href={String::from(other["profile"][0]["website"].as_str().unwrap())}>
-                            <img src={String::from(other["profile"][0]["image"].as_str().unwrap())} alt="company logo" />
-                        </a>
+                        <section>
+                            <p>{other["profile"][0]["description"].as_str()}</p>
+                            <a href={String::from(other["profile"][0]["website"].as_str().unwrap())}>
+                                <img src={String::from(other["profile"][0]["image"].as_str().unwrap())} alt="company logo" />
+                            </a>
+                        </section>
+                        <section>
+                            <p><small>{" * Financials in "}<strong>{"Millions"}</strong>{" of "}<strong>{"US Dollar"}</strong></small></p>
+                        </section>
                     </section>
                     <section>
-                        <figure>
                             <table role="grid">
                                 <thead>
                                     <tr>
@@ -106,13 +138,23 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
 
                                        keys.iter().map(|key| html! {
                                         <tr>
-                                            <th scope="row"><nobr>{key.to_case(Case::Lower)}</nobr></th>
+
+                                            if important.contains(key) {
+                                                <th scope="row">
+                                                    <nobr>
+                                                        <u><strong>{key.to_case(Case::Title)}</strong></u>
+                                                    </nobr>
+                                                </th>
+                                            } else {
+                                                <th scope="row"><nobr>{key.to_case(Case::Title)}</nobr></th>
+                                            }
+
 
                                             {
                                                 income.iter().map(|income_statement| html! {
                                                     <td>{
 
-                                                            if key.to_case(Case::Lower).contains("ratio") {
+                                                            if key.to_case(Case::Title).contains("Ratio") ||  key.to_case(Case::Title).contains("Eps") {
 
                                                                 match income_statement[key].as_f64() {
                                                                     Some(v) => ac.format_money(v),
@@ -135,7 +177,6 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                                     }
                                 </tbody>
                             </table>
-                        </figure>
                     </section>
                 </>
             }
