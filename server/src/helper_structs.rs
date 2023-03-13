@@ -32,7 +32,6 @@ pub struct ResponseCache {
 #[serde(rename_all = "camelCase")]
 pub struct IncomeStatement {
     pub date: String,
-    #[serde(rename(serialize = "revenues"))]
     pub revenue: Option<f64>,
     pub cost_of_revenue: Option<f64>,
     pub gross_profit: Option<f64>,
@@ -48,7 +47,6 @@ pub struct IncomeStatement {
     pub interest_expense: Option<f64>,
     pub depreciation_and_amortization: Option<f64>,
     pub ebitda: Option<f64>,
-    #[serde(rename(serialize = "ebitdaRatio"))]
     pub ebitdaratio: Option<f64>,
     pub operating_income: Option<f64>,
     pub operating_income_ratio: Option<f64>,
@@ -59,7 +57,6 @@ pub struct IncomeStatement {
     pub net_income: Option<f64>,
     pub net_income_ratio: Option<f64>,
     pub eps: Option<f64>,
-    #[serde(rename(serialize = "dilutedEPS"))]
     pub epsdiluted: Option<f64>,
     pub weighted_average_shs_out: Option<f64>,
     pub weighted_average_shs_out_dil: Option<f64>,

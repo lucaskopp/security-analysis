@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 pub struct Statements {
     pub annual_income: (Vec<IncomeStatement>, FetchStats),
     pub quarter_income: (Vec<IncomeStatement>, FetchStats),
+    pub ttm_income: (Vec<IncomeStatement>, FetchStats),
     pub annual_balance: (Vec<BalanceSheetStatement>, FetchStats),
     pub quarter_balance: (Vec<BalanceSheetStatement>, FetchStats),
     pub annual_cash: (Vec<CashFlowStatement>, FetchStats),
@@ -27,6 +28,7 @@ impl Statements {
             quarter_balance: (Vec::new(), FetchStats::new(0)),
             annual_income: (Vec::new(), FetchStats::new(0)),
             quarter_income: (Vec::new(), FetchStats::new(0)),
+            ttm_income: (Vec::new(), FetchStats::new(0)),
             annual_cash: (Vec::new(), FetchStats::new(0)),
             quarter_cash: (Vec::new(), FetchStats::new(0)),
         }
@@ -50,7 +52,7 @@ impl Statements {
                             api::<IncomeStatement>(&period, &symbol, "".to_string()).await,
                             stats,
                         );
-                    } 
+                    }
                     // else {
                     //     println!("USED CACHE FOR INCOME - {}!", &symbol);
                     // }
@@ -64,10 +66,56 @@ impl Statements {
                             api::<IncomeStatement>(&period, &symbol, "".to_string()).await,
                             stats,
                         );
-                    } 
+                    }
                     // else {
                     //     println!("USED CACHE FOR INCOME - {} (QTR)!", &symbol);
                     // }
+                }
+                TimePeriod::TTM() => {
+                    if (self.ttm_income.0.len() == 0
+                        && 1 > self.ttm_income.1.last_pull_length as u8)
+                        || should_update
+                    {
+                        self.fetch::<IncomeStatement>(TimePeriod::Quarter(10), symbol).await;
+                        let most_recent = &self.quarter_income.0[0];
+
+                        let mut ttm_income = IncomeStatement {
+                            date: most_recent.date.clone(),
+                            cost_and_expenses: most_recent.cost_and_expenses,
+                            cost_of_revenue: most_recent.cost_of_revenue,
+                            depreciation_and_amortization: most_recent.depreciation_and_amortization,
+                            ebitda: most_recent.ebitda,
+                            ebitdaratio: None,
+                            eps: most_recent.eps,
+                            epsdiluted: most_recent.epsdiluted,
+                            general_and_administrative_expenses: most_recent.general_and_administrative_expenses,
+                            gross_profit: most_recent.gross_profit,
+                            revenue: most_recent.revenue,
+                            gross_profit_ratio: None,
+                            income_before_tax: most_recent.income_before_tax, 
+                            income_before_tax_ratio: None,
+                            income_tax_expense: most_recent.income_tax_expense,
+                            interest_expense: most_recent.interest_expense, 
+                            interest_income: most_recent.interest_income,
+                            net_income: most_recent.net_income,
+                            net_income_ratio: None,
+                            operating_expenses: most_recent.operating_expenses,
+                            operating_income: most_recent.operating_income,
+                            operating_income_ratio: None,
+                            other_expenses: most_recent.other_expenses,
+                            research_and_development_expenses: most_recent.research_and_development_expenses,
+                            selling_and_marketing_expenses: most_recent.selling_and_marketing_expenses,
+                            selling_general_and_administrative_expenses: most_recent.selling_general_and_administrative_expenses,
+                            total_other_income_expenses_net: most_recent.total_other_income_expenses_net,
+                            weighted_average_shs_out: most_recent.weighted_average_shs_out,
+                            weighted_average_shs_out_dil: most_recent.weighted_average_shs_out_dil,
+
+                        };
+
+                        for i in [1..4] {
+                            ttm_income.cost_and_expenses = &self.quarter_income.0[i];
+                        }
+                    }
                 }
                 _ => {}
             }
@@ -82,7 +130,7 @@ impl Statements {
                             api::<BalanceSheetStatement>(&period, &symbol, "".to_string()).await,
                             stats,
                         );
-                    } 
+                    }
                     // else {
                     //     println!("USED CACHE FOR BALANCE - {}!", &symbol);
                     // }
@@ -96,7 +144,7 @@ impl Statements {
                             api::<BalanceSheetStatement>(&period, &symbol, "".to_string()).await,
                             stats,
                         );
-                    } 
+                    }
                     // else {
                     //     println!("USED CACHE FOR BALANCE - {} (QTR)!", &symbol);
                     // }
@@ -128,7 +176,7 @@ impl Statements {
                             api::<CashFlowStatement>(&period, &symbol, "".to_string()).await,
                             stats,
                         );
-                    } 
+                    }
                     // else {
                     //     println!("USED CACHE FOR CASH - {} (QTR)!", &symbol);
                     // }
