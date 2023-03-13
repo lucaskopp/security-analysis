@@ -75,7 +75,7 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                 "interestExpense",
                 "depreciationAndAmortization",
                 "ebitda",
-                "ebitdaratio",
+                "ebitdaRatio",
                 "operatingIncome",
                 "operatingIncomeRatio",
                 "totalOtherIncomeExpensesNet",
