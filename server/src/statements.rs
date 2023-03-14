@@ -138,7 +138,9 @@ impl Statements {
 
                                     ttm_income.depreciation_and_amortization = Some(
                                         statement.depreciation_and_amortization.unwrap_or_default()
-                                            + ttm_income.depreciation_and_amortization.unwrap_or_default(),
+                                            + ttm_income
+                                                .depreciation_and_amortization
+                                                .unwrap_or_default(),
                                     );
 
                                     ttm_income.ebitda = Some(
@@ -157,8 +159,12 @@ impl Statements {
                                     );
 
                                     ttm_income.general_and_administrative_expenses = Some(
-                                        statement.general_and_administrative_expenses.unwrap_or_default()
-                                            + ttm_income.general_and_administrative_expenses.unwrap_or_default(),
+                                        statement
+                                            .general_and_administrative_expenses
+                                            .unwrap_or_default()
+                                            + ttm_income
+                                                .general_and_administrative_expenses
+                                                .unwrap_or_default(),
                                     );
 
                                     ttm_income.gross_profit = Some(
@@ -212,24 +218,45 @@ impl Statements {
                                     );
 
                                     ttm_income.research_and_development_expenses = Some(
-                                        statement.research_and_development_expenses.unwrap_or_default()
-                                            + ttm_income.research_and_development_expenses.unwrap_or_default(),
+                                        statement
+                                            .research_and_development_expenses
+                                            .unwrap_or_default()
+                                            + ttm_income
+                                                .research_and_development_expenses
+                                                .unwrap_or_default(),
                                     );
 
                                     ttm_income.selling_and_marketing_expenses = Some(
-                                        statement.selling_and_marketing_expenses.unwrap_or_default()
-                                            + ttm_income.selling_and_marketing_expenses.unwrap_or_default(),
+                                        statement
+                                            .selling_and_marketing_expenses
+                                            .unwrap_or_default()
+                                            + ttm_income
+                                                .selling_and_marketing_expenses
+                                                .unwrap_or_default(),
                                     );
 
                                     ttm_income.selling_general_and_administrative_expenses = Some(
-                                        statement.selling_general_and_administrative_expenses.unwrap_or_default()
-                                            + ttm_income.selling_general_and_administrative_expenses.unwrap_or_default(),
+                                        statement
+                                            .selling_general_and_administrative_expenses
+                                            .unwrap_or_default()
+                                            + ttm_income
+                                                .selling_general_and_administrative_expenses
+                                                .unwrap_or_default(),
                                     );
 
                                     ttm_income.total_other_income_expenses_net = Some(
-                                        statement.total_other_income_expenses_net.unwrap_or_default()
-                                            + ttm_income.total_other_income_expenses_net.unwrap_or_default(),
+                                        statement
+                                            .total_other_income_expenses_net
+                                            .unwrap_or_default()
+                                            + ttm_income
+                                                .total_other_income_expenses_net
+                                                .unwrap_or_default(),
                                     );
+
+                                    if i == 0 {
+                                        ttm_income.weighted_average_shs_out_dil = statement.weighted_average_shs_out_dil;
+                                        ttm_income.weighted_average_shs_out = statement.weighted_average_shs_out; 
+                                    }
                                 }
                                 None => {}
                             }

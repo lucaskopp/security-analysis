@@ -300,7 +300,6 @@ pub struct KeyMetrics {
     pub dividend_yield: Option<f64>,
     pub payout_ratio: Option<f64>,
     pub sales_general_and_administrative_to_revenue: Option<f64>,
-    #[serde(rename(serialize = "researchAndDevelopementToRevenue"))]
     pub research_and_ddevelopement_to_revenue: Option<f64>,
     pub intangibles_to_total_assets: Option<f64>,
     pub capex_to_operating_cash_flow: Option<f64>,
