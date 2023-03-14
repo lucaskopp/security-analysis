@@ -62,9 +62,17 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
         }
         Some(stock) => {
             let other = &stock[0]["other"];
-            let income = &stock[0]["statements"]["annual_income"][0]
+            let stock = stock.clone();
+            let mut income = stock[0]["statements"]["annual_income"][0]
                 .as_array()
-                .unwrap();
+                .unwrap()
+                .to_owned();
+
+            let ttm_income = stock[0]["statements"]["ttm_income"][0][0].clone();
+
+            if ttm_income["revenue"].as_f64() != income[0]["revenue"].as_f64() {
+                income.insert(0, stock[0]["statements"]["ttm_income"][0][0].clone());
+            }
 
             let fields = vec![
                 TableField {
@@ -84,12 +92,6 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                     preffered_name: "Gross Profit".to_string(),
                     important: true,
                     millions: true,
-                },
-                TableField {
-                    name_in_api: "grossProfitRatio".to_string(),
-                    preffered_name: "Gross Profit Ratio".to_string(),
-                    important: false,
-                    millions: false,
                 },
                 TableField {
                     name_in_api: "researchAndDevelopmentExpenses".to_string(),
@@ -158,22 +160,10 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                     millions: true,
                 },
                 TableField {
-                    name_in_api: "ebitdaratio".to_string(),
-                    preffered_name: "ebitda Ratio".to_string(),
-                    important: false,
-                    millions: false,
-                },
-                TableField {
                     name_in_api: "operatingIncome".to_string(),
                     preffered_name: "Operating Income".to_string(),
                     important: true,
                     millions: true,
-                },
-                TableField {
-                    name_in_api: "operatingIncomeRatio".to_string(),
-                    preffered_name: "Operating Income Ratio".to_string(),
-                    important: false,
-                    millions: false,
                 },
                 TableField {
                     name_in_api: "totalOtherIncomeExpensesNet".to_string(),
@@ -188,12 +178,6 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                     millions: true,
                 },
                 TableField {
-                    name_in_api: "incomeBeforeTaxRatio".to_string(),
-                    preffered_name: "Income Before Tax Ratio".to_string(),
-                    important: false,
-                    millions: false,
-                },
-                TableField {
                     name_in_api: "incomeTaxExpense".to_string(),
                     preffered_name: "Income Tax Expense".to_string(),
                     important: false,
@@ -204,12 +188,6 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                     preffered_name: "Net Income".to_string(),
                     important: true,
                     millions: true,
-                },
-                TableField {
-                    name_in_api: "netIncomeRatio".to_string(),
-                    preffered_name: "Net Income Ratio".to_string(),
-                    important: false,
-                    millions: false,
                 },
                 TableField {
                     name_in_api: "eps".to_string(),
@@ -286,7 +264,6 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                                             } else {
                                                 <th scope="row"><nobr>{&field.preffered_name}</nobr></th>
                                             }
-
 
                                             {
                                                 income.iter().map(|income_statement| html! {

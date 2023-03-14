@@ -39,7 +39,7 @@ impl Statements {
         T: DeserializeOwned + Debug + 'static,
     {
         let should_update = needs_update_based_on_time(self, &period);
-        let stats = update_pull_stats(&period);
+        let mut stats = update_pull_stats(&period);
 
         if TypeId::of::<T>() == TypeId::of::<IncomeStatement>() {
             match period {
@@ -76,45 +76,166 @@ impl Statements {
                         && 1 > self.ttm_income.1.last_pull_length as u8)
                         || should_update
                     {
-                        self.fetch::<IncomeStatement>(TimePeriod::Quarter(10), symbol).await;
-                        let most_recent = &self.quarter_income.0[0];
+                        let ttm_stats = stats.clone();
+
+                        if (self.quarter_income.0.len() < 8 as usize
+                            && 8 > self.quarter_income.1.last_pull_length as u8)
+                            || should_update
+                        {
+                            stats = update_pull_stats(&TimePeriod::Quarter(8));
+
+                            self.quarter_income = (
+                                api::<IncomeStatement>(&period, &symbol, "".to_string()).await,
+                                stats,
+                            );
+                        }
 
                         let mut ttm_income = IncomeStatement {
-                            date: most_recent.date.clone(),
-                            cost_and_expenses: most_recent.cost_and_expenses,
-                            cost_of_revenue: most_recent.cost_of_revenue,
-                            depreciation_and_amortization: most_recent.depreciation_and_amortization,
-                            ebitda: most_recent.ebitda,
+                            date: String::from("TTM"),
+                            cost_and_expenses: None,
+                            cost_of_revenue: None,
+                            depreciation_and_amortization: None,
+                            ebitda: None,
                             ebitdaratio: None,
-                            eps: most_recent.eps,
-                            epsdiluted: most_recent.epsdiluted,
-                            general_and_administrative_expenses: most_recent.general_and_administrative_expenses,
-                            gross_profit: most_recent.gross_profit,
-                            revenue: most_recent.revenue,
+                            eps: None,
+                            epsdiluted: None,
+                            general_and_administrative_expenses: None,
+                            gross_profit: None,
+                            revenue: None,
                             gross_profit_ratio: None,
-                            income_before_tax: most_recent.income_before_tax, 
+                            income_before_tax: None,
                             income_before_tax_ratio: None,
-                            income_tax_expense: most_recent.income_tax_expense,
-                            interest_expense: most_recent.interest_expense, 
-                            interest_income: most_recent.interest_income,
-                            net_income: most_recent.net_income,
+                            income_tax_expense: None,
+                            interest_expense: None,
+                            interest_income: None,
+                            net_income: None,
                             net_income_ratio: None,
-                            operating_expenses: most_recent.operating_expenses,
-                            operating_income: most_recent.operating_income,
+                            operating_expenses: None,
+                            operating_income: None,
                             operating_income_ratio: None,
-                            other_expenses: most_recent.other_expenses,
-                            research_and_development_expenses: most_recent.research_and_development_expenses,
-                            selling_and_marketing_expenses: most_recent.selling_and_marketing_expenses,
-                            selling_general_and_administrative_expenses: most_recent.selling_general_and_administrative_expenses,
-                            total_other_income_expenses_net: most_recent.total_other_income_expenses_net,
-                            weighted_average_shs_out: most_recent.weighted_average_shs_out,
-                            weighted_average_shs_out_dil: most_recent.weighted_average_shs_out_dil,
-
+                            other_expenses: None,
+                            research_and_development_expenses: None,
+                            selling_and_marketing_expenses: None,
+                            selling_general_and_administrative_expenses: None,
+                            total_other_income_expenses_net: None,
+                            weighted_average_shs_out: None,
+                            weighted_average_shs_out_dil: None,
                         };
 
-                        for i in [1..4] {
-                            ttm_income.cost_and_expenses = &self.quarter_income.0[i];
+                        for i in 0..4 {
+                            let statement = self.quarter_income.0.get(i);
+                            match statement {
+                                Some(statement) => {
+                                    ttm_income.cost_and_expenses = Some(
+                                        statement.cost_and_expenses.unwrap_or_default()
+                                            + ttm_income.cost_and_expenses.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.cost_of_revenue = Some(
+                                        statement.cost_of_revenue.unwrap_or_default()
+                                            + ttm_income.cost_of_revenue.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.depreciation_and_amortization = Some(
+                                        statement.depreciation_and_amortization.unwrap_or_default()
+                                            + ttm_income.depreciation_and_amortization.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.ebitda = Some(
+                                        statement.ebitda.unwrap_or_default()
+                                            + ttm_income.ebitda.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.eps = Some(
+                                        statement.eps.unwrap_or_default()
+                                            + ttm_income.eps.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.epsdiluted = Some(
+                                        statement.epsdiluted.unwrap_or_default()
+                                            + ttm_income.epsdiluted.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.general_and_administrative_expenses = Some(
+                                        statement.general_and_administrative_expenses.unwrap_or_default()
+                                            + ttm_income.general_and_administrative_expenses.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.gross_profit = Some(
+                                        statement.gross_profit.unwrap_or_default()
+                                            + ttm_income.gross_profit.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.revenue = Some(
+                                        statement.revenue.unwrap_or_default()
+                                            + ttm_income.revenue.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.income_before_tax = Some(
+                                        statement.income_before_tax.unwrap_or_default()
+                                            + ttm_income.income_before_tax.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.income_tax_expense = Some(
+                                        statement.income_tax_expense.unwrap_or_default()
+                                            + ttm_income.income_tax_expense.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.interest_expense = Some(
+                                        statement.interest_expense.unwrap_or_default()
+                                            + ttm_income.interest_expense.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.interest_income = Some(
+                                        statement.interest_income.unwrap_or_default()
+                                            + ttm_income.interest_income.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.net_income = Some(
+                                        statement.net_income.unwrap_or_default()
+                                            + ttm_income.net_income.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.operating_expenses = Some(
+                                        statement.operating_expenses.unwrap_or_default()
+                                            + ttm_income.operating_expenses.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.operating_income = Some(
+                                        statement.operating_income.unwrap_or_default()
+                                            + ttm_income.operating_income.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.other_expenses = Some(
+                                        statement.other_expenses.unwrap_or_default()
+                                            + ttm_income.other_expenses.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.research_and_development_expenses = Some(
+                                        statement.research_and_development_expenses.unwrap_or_default()
+                                            + ttm_income.research_and_development_expenses.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.selling_and_marketing_expenses = Some(
+                                        statement.selling_and_marketing_expenses.unwrap_or_default()
+                                            + ttm_income.selling_and_marketing_expenses.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.selling_general_and_administrative_expenses = Some(
+                                        statement.selling_general_and_administrative_expenses.unwrap_or_default()
+                                            + ttm_income.selling_general_and_administrative_expenses.unwrap_or_default(),
+                                    );
+
+                                    ttm_income.total_other_income_expenses_net = Some(
+                                        statement.total_other_income_expenses_net.unwrap_or_default()
+                                            + ttm_income.total_other_income_expenses_net.unwrap_or_default(),
+                                    );
+                                }
+                                None => {}
+                            }
                         }
+
+                        self.ttm_income = (vec![ttm_income], ttm_stats);
                     }
                 }
                 _ => {}

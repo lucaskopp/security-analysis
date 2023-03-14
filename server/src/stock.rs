@@ -69,6 +69,7 @@ impl Stock {
     pub async fn get_all(&mut self) {
         self.income(TimePeriod::Annual(10)).await;
         self.income(TimePeriod::Quarter(8)).await;
+        self.income(TimePeriod::TTM()).await;
         self.balance(TimePeriod::Annual(10)).await;
         self.balance(TimePeriod::Quarter(8)).await;
         self.cash(TimePeriod::Annual(10)).await;
