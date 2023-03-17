@@ -70,10 +70,12 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                 .to_owned();
 
             let ttm_income = stock[0]["statements"]["ttm_income"][0][0].clone();
+            let last_quarter_period = stock[0]["statements"]["quarter_income"][0][0]["period"].as_str().unwrap();
 
-            if ttm_income["revenue"].as_f64() != income[0]["revenue"].as_f64() {
-                income.insert(0, stock[0]["statements"]["ttm_income"][0][0].clone());
+            if last_quarter_period != "Q4" {
+                income.insert(0, ttm_income);
             }
+
 
             let fields = vec![
                 TableField {

@@ -92,6 +92,7 @@ impl Statements {
 
                         let mut ttm_income = IncomeStatement {
                             date: String::from("TTM"),
+                            period: String::from("TTM"),
                             cost_and_expenses: None,
                             cost_of_revenue: None,
                             depreciation_and_amortization: None,

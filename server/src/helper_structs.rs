@@ -32,6 +32,7 @@ pub struct ResponseCache {
 #[serde(rename_all = "camelCase")]
 pub struct IncomeStatement {
     pub date: String,
+    pub period: String,
     pub revenue: Option<f64>,
     pub cost_of_revenue: Option<f64>,
     pub gross_profit: Option<f64>,
