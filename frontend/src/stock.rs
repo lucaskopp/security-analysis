@@ -1,11 +1,17 @@
 use accounting::Accounting;
-use convert_case::{Case, Casing};
 use std::vec;
+use wasm_bindgen::JsCast;
+use web_sys::{Event, EventTarget, HtmlSelectElement};
 
 use gloo_net::http::Request;
 use serde_json::Value;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
+
+struct StatementData {
+    pub name: String,
+    pub field_data: Vec<TableField>,
+}
 
 struct TableField {
     pub name_in_api: String,
@@ -25,6 +31,30 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
     let url = format!("/api/stock/{}", symbol);
 
     let data = use_state(|| None);
+    let statement_data = use_state(|| get_income_statement_meta());
+
+    let on_change = {
+        let statement_data = statement_data.clone();
+
+        Callback::from(move |e: Event| {
+            // When events are created the target is undefined, it's only
+            // when dispatched does the target get added.
+            let target: Option<EventTarget> = e.target();
+            // Events can bubble so this listener might catch events from child
+            // elements which are not of type HtmlInputElement
+            let input = target.and_then(|t| t.dyn_into::<HtmlSelectElement>().ok());
+
+            if let Some(input) = input {
+                if input.value() == "income".to_string() {
+                    statement_data.set(get_income_statement_meta());
+                } else if input.value() == "balance".to_string() {
+                    statement_data.set(get_balance_statement_meta());
+                } else {
+                    statement_data.set(get_cash_statement_meta());
+                }
+            }
+        })
+    };
 
     {
         let data = data.clone();
@@ -64,161 +94,25 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
         Some(stock) => {
             let other = &stock[0]["other"];
             let stock = stock.clone();
-            let mut income = stock[0]["statements"]["annual_income"][0]
-                .as_array()
-                .unwrap()
-                .to_owned();
 
-            let ttm_income = stock[0]["statements"]["ttm_income"][0][0].clone();
-            let last_quarter_period = stock[0]["statements"]["quarter_income"][0][0]["period"].as_str().unwrap();
+            let statement_data = statement_data.clone();
 
-            if last_quarter_period != "Q4" {
-                income.insert(0, ttm_income);
+            let mut statement = stock[0]["statements"][format!("annual_{}", statement_data.name)]
+                [0]
+            .as_array()
+            .unwrap()
+            .to_owned();
+
+            if statement_data.name == "income" {
+                let ttm = stock[0]["statements"]["ttm_income"][0][0].clone();
+                let last_quarter_period = stock[0]["statements"]["quarter_income"][0][0]["period"]
+                    .as_str()
+                    .unwrap();
+
+                if last_quarter_period != "Q4" {
+                    statement.insert(0, ttm);
+                }
             }
-
-
-            let fields = vec![
-                TableField {
-                    name_in_api: "revenue".to_string(),
-                    preffered_name: "Total Revenue".to_string(),
-                    important: true,
-                    millions: true,
-                    negative: false,
-                },
-                TableField {
-                    name_in_api: "costOfRevenue".to_string(),
-                    preffered_name: "Cost of Revenue".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: true,
-                },
-                TableField {
-                    name_in_api: "grossProfit".to_string(),
-                    preffered_name: "Total Gross Profit".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: false,
-                },
-                TableField {
-                    name_in_api: "researchAndDevelopmentExpenses".to_string(),
-                    preffered_name: "Research and Developement Expenses".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: true,
-                },
-                TableField {
-                    name_in_api: "generalAndAdministrativeExpenses".to_string(),
-                    preffered_name: "General and Administrative Expenses".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: true,
-                },
-                TableField {
-                    name_in_api: "sellingAndMarketingExpenses".to_string(),
-                    preffered_name: "Selling and Marketing Expenses".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: true,
-                },
-                TableField {
-                    name_in_api: "sellingGeneralAndAdministrativeExpenses".to_string(),
-                    preffered_name: "Selling, General and Administrative Expenses".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: true,
-                },
-                TableField {
-                    name_in_api: "otherExpenses".to_string(),
-                    preffered_name: "Other Expenses".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: true,
-                },
-                TableField {
-                    name_in_api: "operatingExpenses".to_string(),
-                    preffered_name: "Total Operating Income/Expenses".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: true,
-                },
-                TableField {
-                    name_in_api: "operatingIncome".to_string(),
-                    preffered_name: "Total Operating Profit/Loss".to_string(),
-                    important: true,
-                    millions: true,
-                    negative: false,
-                },
-                TableField {
-                    name_in_api: "interestIncome".to_string(),
-                    preffered_name: "Interest Income".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: false,
-                },
-                TableField {
-                    name_in_api: "interestExpense".to_string(),
-                    preffered_name: "Interest Expense".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: true,
-                },
-                TableField {
-                    name_in_api: "totalOtherIncomeExpensesNet".to_string(),
-                    preffered_name: "Total Other Income Expenses Net".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: false,
-                },
-                TableField {
-                    name_in_api: "incomeBeforeTax".to_string(),
-                    preffered_name: "Income Before Tax".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: false,
-                },
-                TableField {
-                    name_in_api: "incomeTaxExpense".to_string(),
-                    preffered_name: "Income Tax Expense".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: true,
-                },
-                TableField {
-                    name_in_api: "netIncome".to_string(),
-                    preffered_name: "Net Income".to_string(),
-                    important: true,
-                    millions: true,
-                    negative: false,
-                },
-                TableField {
-                    name_in_api: "eps".to_string(),
-                    preffered_name: "Basic eps".to_string(),
-                    important: false,
-                    millions: false,
-                    negative: false,
-                },
-                TableField {
-                    name_in_api: "epsdiluted".to_string(),
-                    preffered_name: "Diluted eps".to_string(),
-                    important: true,
-                    millions: false,
-                    negative: false,
-                },
-                TableField {
-                    name_in_api: "weightedAverageShsOut".to_string(),
-                    preffered_name: "Weighted Average Shares Outstanding".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: false,
-                },
-                TableField {
-                    name_in_api: "weightedAverageShsOutDil".to_string(),
-                    preffered_name: "Weighted Average Shares Outstanding Diluted".to_string(),
-                    important: false,
-                    millions: true,
-                    negative: false,
-                },
-            ];
 
             let mut ac = Accounting::new_from("$", 2);
             ac.set_format_positive("{v}");
@@ -239,6 +133,11 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                             </a>
                         </section>
                         <section>
+                            <select id="statement" onchange={on_change}>
+                                <option value="income">{"Income Statement"}</option>
+                                <option value="balance">{"Balance Sheet Statement"}</option>
+                                <option value="cashflow">{"Cash Flow Statement"}</option>
+                            </select>
                             <p><small>{" * Financials in "}<strong>{"Millions"}</strong>{" of "}<strong>{"US Dollar"}</strong></small></p>
                         </section>
                     </section>
@@ -248,8 +147,8 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                                     <tr>
                                         <th scope="col"></th>
                                         {
-                                            income.iter().map(|income_statement| html! {
-                                                <th scope="col"> <nobr> {income_statement["date"].as_str()}</nobr></th>
+                                            statement.iter().map(|s| html! {
+                                                <th scope="col"> <nobr> {s["date"].as_str()}</nobr></th>
                                             }).collect::<Html>()
                                         }
                                     </tr>
@@ -257,7 +156,7 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                                 <tbody>
                                     {
 
-                                       fields.iter().map(|field| html! {
+                                       statement_data.field_data.iter().map(|field| html! {
                                         <tr>
 
                                             if field.important {
@@ -271,10 +170,10 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                                             }
 
                                             {
-                                                income.iter().map(|income_statement| html! {
+                                                statement.iter().map(|s| html! {
                                                     <td>{
                                                             if field.millions == false {
-                                                                match income_statement[&field.name_in_api].as_f64() {
+                                                                match s[&field.name_in_api].as_f64() {
                                                                     Some(v) => {
 
                                                                         if field.negative == true && v > 0.0 {
@@ -288,7 +187,7 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
 
                                                             } else {
 
-                                                                match income_statement[&field.name_in_api].as_f64() {
+                                                                match s[&field.name_in_api].as_f64() {
 
                                                                     Some(v) => {
                                                                         if field.negative == true && v > 0.0 {
@@ -314,5 +213,185 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                 </>
             }
         }
+    }
+}
+
+fn get_income_statement_meta() -> StatementData {
+    let fields = vec![
+        TableField {
+            name_in_api: "revenue".to_string(),
+            preffered_name: "Total Revenue".to_string(),
+            important: true,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "costOfRevenue".to_string(),
+            preffered_name: "Cost of Revenue".to_string(),
+            important: false,
+            millions: true,
+            negative: true,
+        },
+        TableField {
+            name_in_api: "grossProfit".to_string(),
+            preffered_name: "Total Gross Profit".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "researchAndDevelopmentExpenses".to_string(),
+            preffered_name: "Research and Developement Expenses".to_string(),
+            important: false,
+            millions: true,
+            negative: true,
+        },
+        TableField {
+            name_in_api: "generalAndAdministrativeExpenses".to_string(),
+            preffered_name: "General and Administrative Expenses".to_string(),
+            important: false,
+            millions: true,
+            negative: true,
+        },
+        TableField {
+            name_in_api: "sellingAndMarketingExpenses".to_string(),
+            preffered_name: "Selling and Marketing Expenses".to_string(),
+            important: false,
+            millions: true,
+            negative: true,
+        },
+        TableField {
+            name_in_api: "sellingGeneralAndAdministrativeExpenses".to_string(),
+            preffered_name: "Selling, General and Administrative Expenses".to_string(),
+            important: false,
+            millions: true,
+            negative: true,
+        },
+        TableField {
+            name_in_api: "otherExpenses".to_string(),
+            preffered_name: "Other Expenses".to_string(),
+            important: false,
+            millions: true,
+            negative: true,
+        },
+        TableField {
+            name_in_api: "operatingExpenses".to_string(),
+            preffered_name: "Total Operating Income/Expenses".to_string(),
+            important: false,
+            millions: true,
+            negative: true,
+        },
+        TableField {
+            name_in_api: "operatingIncome".to_string(),
+            preffered_name: "Total Operating Profit/Loss".to_string(),
+            important: true,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "interestIncome".to_string(),
+            preffered_name: "Interest Income".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "interestExpense".to_string(),
+            preffered_name: "Interest Expense".to_string(),
+            important: false,
+            millions: true,
+            negative: true,
+        },
+        TableField {
+            name_in_api: "totalOtherIncomeExpensesNet".to_string(),
+            preffered_name: "Total Other Income Expenses Net".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "incomeBeforeTax".to_string(),
+            preffered_name: "Income Before Tax".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "incomeTaxExpense".to_string(),
+            preffered_name: "Income Tax Expense".to_string(),
+            important: false,
+            millions: true,
+            negative: true,
+        },
+        TableField {
+            name_in_api: "netIncome".to_string(),
+            preffered_name: "Net Income".to_string(),
+            important: true,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "eps".to_string(),
+            preffered_name: "Basic eps".to_string(),
+            important: false,
+            millions: false,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "epsdiluted".to_string(),
+            preffered_name: "Diluted eps".to_string(),
+            important: true,
+            millions: false,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "weightedAverageShsOut".to_string(),
+            preffered_name: "Weighted Average Shares Outstanding".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "weightedAverageShsOutDil".to_string(),
+            preffered_name: "Weighted Average Shares Outstanding Diluted".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+    ];
+
+    StatementData {
+        name: String::from("income"),
+        field_data: fields,
+    }
+}
+
+fn get_balance_statement_meta() -> StatementData {
+    let fields = vec![TableField {
+        name_in_api: "cashAndCashEquivalents".to_string(),
+        preffered_name: "cashAndCashEquivalents".to_string(),
+        important: false,
+        millions: true,
+        negative: false,
+    }];
+
+    StatementData {
+        name: String::from("balance"),
+        field_data: fields,
+    }
+}
+
+fn get_cash_statement_meta() -> StatementData {
+    let fields = vec![TableField {
+        name_in_api: "freeCashFlow".to_string(),
+        preffered_name: "freeCashFlow".to_string(),
+        important: false,
+        millions: true,
+        negative: false,
+    }];
+
+    StatementData {
+        name: String::from("cash"),
+        field_data: fields,
     }
 }
