@@ -134,7 +134,7 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                         </section>
                         <section>
                             <select id="statement" onchange={on_change}>
-                                <option value="income">{"Income Statement"}</option>
+                                <option value="income" selected=true>{"Income Statement"}</option>
                                 <option value="balance">{"Balance Sheet Statement"}</option>
                                 <option value="cashflow">{"Cash Flow Statement"}</option>
                             </select>
@@ -367,13 +367,162 @@ fn get_income_statement_meta() -> StatementData {
 }
 
 fn get_balance_statement_meta() -> StatementData {
-    let fields = vec![TableField {
-        name_in_api: "cashAndCashEquivalents".to_string(),
-        preffered_name: "cashAndCashEquivalents".to_string(),
-        important: false,
-        millions: true,
-        negative: false,
-    }];
+    let fields = vec![
+        TableField {
+            name_in_api: "cashAndCashEquivalents".to_string(),
+            preffered_name: "Cash and Cash Equivalents".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "shortTermInvestments".to_string(),
+            preffered_name: "Short Term Investments".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "cashAndShortTermInvestments".to_string(),
+            preffered_name: "Cash Equivalents and Short Term Investments".to_string(),
+            important: true,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "inventory".to_string(),
+            preffered_name: "Inventories".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "netReceivables".to_string(),
+            preffered_name: "Trade and Other Recievables".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "otherCurrentAssets".to_string(),
+            preffered_name: "Other Current Assets".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "totalCurrentAssets".to_string(),
+            preffered_name: "Total Current Assets".to_string(),
+            important: true,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "propertyPlantEquipmentNet".to_string(),
+            preffered_name: "Net Property, Plant and Equipment".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "longTermInvestments".to_string(),
+            preffered_name: "Total Long Term Investments".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "otherNonCurrentAssets".to_string(),
+            preffered_name: "Other Non-Current Assets".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "intangibleAssets".to_string(),
+            preffered_name: "Net Intangible Assets".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "totalAssets".to_string(),
+            preffered_name: "Total Assets".to_string(),
+            important: true,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "accountPayables".to_string(),
+            preffered_name: "Payables and Accured Expenses".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "deferredRevenue".to_string(),
+            preffered_name: "Deffered Liabilities".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "otherCurrentLiabilities".to_string(),
+            preffered_name: "Other Current Liabilities".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "shortTermDebt".to_string(),
+            preffered_name: "Financial Liabilities".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "totalCurrentLiabilities".to_string(),
+            preffered_name: "Total Current Liabilities".to_string(),
+            important: true,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "longTermDebt".to_string(),
+            preffered_name: "Financial Liabilities, Non-Current".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "otherNonCurrentLiabilities".to_string(),
+            preffered_name: "Other Non-Current Liabilities".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "deferredRevenueNonCurrent".to_string(),
+            preffered_name: "Deffered Liabilities, Non-Current".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "totalNonCurrentLiabilities".to_string(),
+            preffered_name: "Total Non-Current Liabilities".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "totalLiabilities".to_string(),
+            preffered_name: "Total Liabilities".to_string(),
+            important: true,
+            millions: true,
+            negative: false,
+        },
+    ];
 
     StatementData {
         name: String::from("balance"),

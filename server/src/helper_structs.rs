@@ -85,6 +85,7 @@ pub struct BalanceSheetStatement {
     pub other_assets: Option<f64>,
     pub total_assets: Option<f64>,
     pub account_payables: Option<f64>,
+    pub short_term_debt: Option<f64>,
     pub deferred_revenue: Option<f64>,
     pub other_current_liabilities: Option<f64>,
     pub total_current_liabilities: Option<f64>,
