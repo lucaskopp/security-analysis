@@ -1,1 +1,5 @@
 @import "https://unpkg.com/@picocss/pico@1.*/css/pico.min.css";
+
+#top-stock-details > p {
+  margin: 0;
+}

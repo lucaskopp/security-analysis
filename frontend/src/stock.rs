@@ -122,9 +122,10 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
             html! {
                 <>
                     <section class={classes!("container")}>
-                        <section>
+                        <section id="top-stock-details">
                             <h2>{ format!("{} ({})", other["profile"][0]["companyName"].as_str().unwrap(), symbol)} <span></span></h2>
-                            <p><u>{"Industry: "}</u>{other["profile"][0]["industry"].as_str()}</p>
+                            <p><u>{"Current Market Valuation:"}</u>{" "}<mark>{market_cap_string(other["profile"][0]["mktCap"].as_f64().unwrap(), &ac)}</mark></p>
+                            <p><u>{"Industry:"}</u>{" "}{other["profile"][0]["industry"].as_str()}</p>
                         </section>
                         <section>
                             <p>{other["profile"][0]["description"].as_str()}</p>
@@ -214,6 +215,18 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
             }
         }
     }
+}
+
+fn market_cap_string(cap: f64, ac: &Accounting) -> String {
+
+    if cap >= 1_000_000_000_000.0 {
+        return ac.format_money(cap / 1_000_000_000_000.0) + " Trillion";
+    } else if cap >= 1_000_000_000.0 {
+        return ac.format_money(cap / 1_000_000_000.0) + " Billion";
+    } else {
+        return ac.format_money(cap / 1_000_000.0) + " Million";
+    }
+
 }
 
 fn get_income_statement_meta() -> StatementData {
