@@ -33,6 +33,7 @@ pub struct ResponseCache {
 pub struct IncomeStatement {
     pub date: String,
     pub period: String,
+    pub reported_currency: Option<String>,
     pub revenue: Option<f64>,
     pub cost_of_revenue: Option<f64>,
     pub gross_profit: Option<f64>,
@@ -67,6 +68,7 @@ pub struct IncomeStatement {
 #[serde(rename_all = "camelCase")]
 pub struct BalanceSheetStatement {
     pub date: String,
+    pub reported_currency: String,
     pub cash_and_cash_equivalents: Option<f64>,
     pub short_term_investments: Option<f64>,
     pub cash_and_short_term_investments: Option<f64>,
@@ -116,6 +118,7 @@ pub struct BalanceSheetStatement {
 #[serde(rename_all = "camelCase")]
 pub struct CashFlowStatement {
     pub date: String,
+    pub reported_currency: String,
     pub net_income: Option<f64>,
     pub depreciation_and_amortization: Option<f64>,
     pub deferred_income_tax: Option<f64>,

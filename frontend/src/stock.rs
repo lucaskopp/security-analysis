@@ -103,11 +103,12 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
             .unwrap()
             .to_owned();
 
+            let last_income_quarter = &stock[0]["statements"]["quarter_income"][0][0];
+
             if statement_data.name == "income" {
                 let ttm = stock[0]["statements"]["ttm_income"][0][0].clone();
-                let last_quarter_period = stock[0]["statements"]["quarter_income"][0][0]["period"]
-                    .as_str()
-                    .unwrap();
+
+                let last_quarter_period = last_income_quarter["period"].as_str().unwrap();
 
                 if last_quarter_period != "Q4" {
                     statement.insert(0, ttm);
@@ -124,14 +125,26 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                     <section class={classes!("container")}>
                         <section id="top-stock-details">
                             <h2>{ format!("{} ({})", other["profile"][0]["companyName"].as_str().unwrap(), symbol)} <span></span></h2>
-                            <p><u>{"Current Market Valuation:"}</u>{" "}<mark>{market_cap_string(other["profile"][0]["mktCap"].as_f64().unwrap(), &ac)}</mark></p>
+                            <p>
+                                <u>{"Current Market Valuation:"}</u>{" "}
+                                <mark>{market_cap_string(other["profile"][0]["mktCap"].as_f64().unwrap(), &ac)}</mark>
+                                {format!(" - ${} per share", ac.format_money(other["profile"][0]["price"].as_f64().unwrap()))}
+                            </p>
+                            <p>
+                                <u>{"Intrinsic Valuation:"}</u>{" "}
+                                {format!(" - ${} per share", ac.format_money(other["profile"][0]["dcf"].as_f64().unwrap()))}
+                            </p>
+                            <p><u>{"Exchange:"}</u>{" "}{other["profile"][0]["exchangeShortName"].as_str()}</p>
+                            <p><u>{"Sector:"}</u>{" "}{other["profile"][0]["sector"].as_str()}</p>
                             <p><u>{"Industry:"}</u>{" "}{other["profile"][0]["industry"].as_str()}</p>
+                            <p><u>{"Country:"}</u>{" "}{other["profile"][0]["country"].as_str()}</p>
                         </section>
                         <section>
                             <p>{other["profile"][0]["description"].as_str()}</p>
                             <a href={String::from(other["profile"][0]["website"].as_str().unwrap())}>
                                 <img src={String::from(other["profile"][0]["image"].as_str().unwrap())} alt="company logo" />
                             </a>
+                            <small>{" * site"}</small>
                         </section>
                         <section>
                             <select id="statement" onchange={on_change}>
@@ -139,7 +152,7 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                                 <option value="balance">{"Balance Sheet Statement"}</option>
                                 <option value="cashflow">{"Cash Flow Statement"}</option>
                             </select>
-                            <p><small>{" * Financials in "}<strong>{"Millions"}</strong>{" of "}<strong>{"US Dollar"}</strong></small></p>
+                            <p><small>{" * Financials in "}<strong>{"Millions"}</strong>{" of "}<strong>{last_income_quarter["reportedCurrency"].as_str()}</strong></small></p>
                         </section>
                     </section>
                     <section>
@@ -218,7 +231,6 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
 }
 
 fn market_cap_string(cap: f64, ac: &Accounting) -> String {
-
     if cap >= 1_000_000_000_000.0 {
         return ac.format_money(cap / 1_000_000_000_000.0) + " Trillion";
     } else if cap >= 1_000_000_000.0 {
@@ -226,7 +238,6 @@ fn market_cap_string(cap: f64, ac: &Accounting) -> String {
     } else {
         return ac.format_money(cap / 1_000_000.0) + " Million";
     }
-
 }
 
 fn get_income_statement_meta() -> StatementData {

@@ -93,6 +93,7 @@ impl Statements {
                         let mut ttm_income = IncomeStatement {
                             date: String::from("TTM"),
                             period: String::from("TTM"),
+                            reported_currency: None,
                             cost_and_expenses: None,
                             cost_of_revenue: None,
                             depreciation_and_amortization: None,
@@ -255,6 +256,7 @@ impl Statements {
                                     );
 
                                     if i == 0 {
+                                        ttm_income.reported_currency = statement.reported_currency.clone();
                                         ttm_income.weighted_average_shs_out_dil = statement.weighted_average_shs_out_dil;
                                         ttm_income.weighted_average_shs_out = statement.weighted_average_shs_out; 
                                     }
