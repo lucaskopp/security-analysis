@@ -6,7 +6,6 @@ use chrono::{NaiveDate, Utc};
 use convert_case::{Case, Casing};
 
 use crate::helper_structs::{FetchStats, StockInfo, TimePeriod};
-use crate::statements::Statements;
 
 pub fn api_key() -> String {
     let mut key = String::from("");
@@ -24,6 +23,12 @@ pub fn api_key() -> String {
 pub fn type_to_api_format<T>() -> String {
     let mut type_string = type_name::<T>().to_string();
     let mut colon_exist = Some(0);
+    let v4 = type_string.contains("AdvancedLeveredDiscountedCashFlow");
+    let mut case = Case::Kebab;
+
+    if v4 {
+        case = Case::Snake;
+    }
 
     while colon_exist != Option::None {
         colon_exist = type_string.find(":");
@@ -33,12 +38,12 @@ pub fn type_to_api_format<T>() -> String {
                 type_string = type_string[v + 2..].to_string();
             }
             None => {
-                return type_string.to_case(Case::Kebab);
+                return type_string.to_case(case);
             }
         }
     }
 
-    type_string.to_case(Case::Kebab)
+    type_string.to_case(case)
 }
 
 pub fn needs_update_based_on_time(statements: &dyn StockInfo, period: &TimePeriod) -> bool {

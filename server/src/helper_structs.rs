@@ -25,7 +25,7 @@ pub struct AvailableTraded {
 #[derive(Debug)]
 pub struct ResponseCache {
     pub endpoint: String,
-    pub data: Json<Vec<Stock>>,
+    pub data: Json<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -436,6 +436,45 @@ pub struct Profile {
     pub is_adr: Option<bool>,
     pub is_fund: Option<bool>,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct AdvancedLeveredDiscountedCashFlow {
+    pub year: Option<String>,
+    pub symbol: Option<String>,
+    pub revenue: Option<f64>,
+    pub revenue_percentage: Option<f64>,
+    pub capital_expenditure: Option<f64>,
+    pub capital_expenditure_percentage: Option<f64>,
+    pub price: Option<f64>,
+    pub beta: Option<f64>,
+    pub diluted_shares_outstanding: Option<f64>,
+    pub cost_of_debt: Option<f64>,
+    pub tax_rate: Option<f64>,
+    pub after_tax_cost_of_debt: Option<f64>,
+    pub risk_free_rate: Option<f64>,
+    pub market_risk_premium: Option<f64>,
+    pub cost_of_equity: Option<f64>,
+    pub total_debt: Option<f64>,
+    pub total_equity: Option<f64>,
+    pub total_capital: Option<f64>,
+    pub debt_weighting: Option<f64>,
+    pub equity_weighting: Option<f64>,
+    pub wacc: Option<f64>,
+    pub pv_lfcf: Option<f64>,
+    pub sum_pv_ufcf: Option<f64>,
+    pub long_term_growth_rate: Option<f64>,
+    pub free_cash_flow: Option<f64>,
+    pub terminal_value: Option<f64>,
+    pub present_terminal_value: Option<f64>,
+    pub enterprise_value: Option<f64>,
+    pub net_debt: Option<f64>,
+    pub equity_value: Option<f64>,
+    pub equity_value_per_share: Option<f64>,
+    pub free_cash_flow_t1: Option<f64>,
+    pub operating_cash_flow_percentage: Option<f64>,
+}
+
 pub struct NeededData {
     pub income: (bool, TimePeriod),
     pub income_qtr: (bool, TimePeriod),

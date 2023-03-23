@@ -21,6 +21,7 @@ where
     let limit: String;
     let period_type: String;
     let key = utils::api_key();
+    let url;
 
     let mut end_point = utils::type_to_api_format::<T>();
 
@@ -43,10 +44,17 @@ where
         }
     }
 
-    let url = format!(
-        "https://financialmodelingprep.com/api/v3/{}/{}?apikey={}&limit={}&period={}&{}",
-        end_point, &symbol, key, limit, period_type, q
-    );
+    if end_point == "advanced_levered_discounted_cash_flow" {
+        url = format!(
+            "https://financialmodelingprep.com/api/v4/{}/?symbol={}&apikey={}&limit={}&period={}&{}",
+            end_point, &symbol, key, limit, period_type, q
+        );
+    } else {
+        url = format!(
+            "https://financialmodelingprep.com/api/v3/{}/{}?apikey={}&limit={}&period={}&{}",
+            end_point, &symbol, key, limit, period_type, q
+        );
+    }
 
     let mut interval = time::interval(Duration::from_secs_f32(0.2));
 

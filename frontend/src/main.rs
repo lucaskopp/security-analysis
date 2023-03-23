@@ -207,9 +207,9 @@ fn screen_page(ScreenPageProps { name }: &ScreenPageProps) -> Html {
                             </tr>
                         </thead>
                         <tbody>
-                            {v.iter().map(|stock| html! {
+                            {v.iter().map(|s| html! {
                                 <tr>
-                                    <td><a href={format!("/stock/{}", stock["ticker"].as_str().unwrap())}>{stock["ticker"].as_str()}</a></td>
+                                    <td><a href={format!("/stock/{}", s.as_str().unwrap())}>{s.as_str()}</a></td>
                                 </tr>
                             }).collect::<Html>()}
                         </tbody>

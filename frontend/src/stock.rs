@@ -132,7 +132,8 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                             </p>
                             <p>
                                 <u>{"Intrinsic Valuation:"}</u>{" "}
-                                {format!(" - ${} per share", ac.format_money(other["profile"][0]["dcf"].as_f64().unwrap()))}
+                                {market_cap_string(other["dcf"][0]["equityValue"].as_f64().unwrap(), &ac)}
+                                {format!(" - ${} per share", ac.format_money(other["dcf"][0]["equityValuePerShare"].as_f64().unwrap()))}
                             </p>
                             <p><u>{"Exchange:"}</u>{" "}{other["profile"][0]["exchangeShortName"].as_str()}</p>
                             <p><u>{"Sector:"}</u>{" "}{other["profile"][0]["sector"].as_str()}</p>
@@ -470,6 +471,13 @@ fn get_balance_statement_meta() -> StatementData {
             negative: false,
         },
         TableField {
+            name_in_api: "totalNonCurrentAssets".to_string(),
+            preffered_name: "Total Non-Current Assets".to_string(),
+            important: true,
+            millions: true,
+            negative: false,
+        },
+        TableField {
             name_in_api: "totalAssets".to_string(),
             preffered_name: "Total Assets".to_string(),
             important: true,
@@ -535,13 +543,55 @@ fn get_balance_statement_meta() -> StatementData {
         TableField {
             name_in_api: "totalNonCurrentLiabilities".to_string(),
             preffered_name: "Total Non-Current Liabilities".to_string(),
-            important: false,
+            important: true,
             millions: true,
             negative: false,
         },
         TableField {
             name_in_api: "totalLiabilities".to_string(),
             preffered_name: "Total Liabilities".to_string(),
+            important: true,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "preferredStock".to_string(),
+            preffered_name: "Preferred Stock".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "commonStock".to_string(),
+            preffered_name: "Common Stock".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "othertotalStockholdersEquity".to_string(),
+            preffered_name: "Additional Paid in Capital".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "retainedEarnings".to_string(),
+            preffered_name: "Retained Earnings".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "accumulatedOtherComprehensiveIncomeLoss".to_string(),
+            preffered_name: "Accumulated Other Comprehensive Income".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "totalEquity".to_string(),
+            preffered_name: "Total Equity".to_string(),
             important: true,
             millions: true,
             negative: false,
@@ -555,13 +605,78 @@ fn get_balance_statement_meta() -> StatementData {
 }
 
 fn get_cash_statement_meta() -> StatementData {
-    let fields = vec![TableField {
-        name_in_api: "freeCashFlow".to_string(),
-        preffered_name: "freeCashFlow".to_string(),
-        important: false,
-        millions: true,
-        negative: false,
-    }];
+    let fields = vec![
+        TableField {
+            name_in_api: "netIncome".to_string(),
+            preffered_name: "Net Income".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "depreciationAndAmortization".to_string(),
+            preffered_name: "Depreciation, Amortization and Depletion".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "stockBasedCompensation".to_string(),
+            preffered_name: "Stock-Based Compensation".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "deferredIncomeTax".to_string(),
+            preffered_name: "Deffered Taxes".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "otherNonCashItems".to_string(),
+            preffered_name: "Other Non-Cash Items".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "inventory".to_string(),
+            preffered_name: "Change in Inventories".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "otherWorkingCapital".to_string(),
+            preffered_name: "Change in Other Current Assets".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "accountsPayables".to_string(),
+            preffered_name: "Change in Payables".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "changeInWorkingCapital".to_string(),
+            preffered_name: "Total Changes in Operating Capital".to_string(),
+            important: false,
+            millions: true,
+            negative: false,
+        },
+        TableField {
+            name_in_api: "netCashProvidedByOperatingActivities".to_string(),
+            preffered_name: "Total Operating Cash Flow".to_string(),
+            important: true,
+            millions: true,
+            negative: false,
+        },
+    ];
 
     StatementData {
         name: String::from("cash"),

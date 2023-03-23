@@ -1,8 +1,5 @@
 use crate::helper_functions::api;
-use crate::helper_structs::{
-    BalanceSheetStatement, CashFlowStatement, FetchStats, IncomeStatement, Profile, TimePeriod,
-};
-use crate::utils::{needs_update_based_on_time, update_pull_stats};
+use crate::helper_structs::{AdvancedLeveredDiscountedCashFlow, Profile, TimePeriod};
 use serde::de::DeserializeOwned;
 
 use core::fmt::Debug;
@@ -13,12 +10,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Other {
     pub profile: Vec<Profile>,
+    pub dcf: Vec<AdvancedLeveredDiscountedCashFlow>,
 }
 
 impl Other {
     pub fn new() -> Self {
         Self {
             profile: vec![],
+            dcf: vec![],
         }
     }
 
@@ -28,6 +27,8 @@ impl Other {
     {
         if TypeId::of::<T>() == TypeId::of::<Profile>() {
             self.profile = api::<Profile>(&TimePeriod::NA(), symbol, "".to_string()).await;
+        } else if TypeId::of::<T>() == TypeId::of::<AdvancedLeveredDiscountedCashFlow>() {
+            self.dcf = api::<AdvancedLeveredDiscountedCashFlow>(&TimePeriod::NA(), symbol, "".to_string()).await;
         }
     }
 }

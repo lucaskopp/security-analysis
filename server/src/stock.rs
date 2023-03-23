@@ -1,7 +1,7 @@
 use crate::{
     helper_structs::{
         BalanceSheetStatement, CashFlowStatement, IncomeStatement, KeyMetrics, KeyMetricsTTM,
-        NeededData, Profile, Ratios, RatiosTTM, TimePeriod,
+        NeededData, Profile, Ratios, RatiosTTM, TimePeriod, AdvancedLeveredDiscountedCashFlow,
     },
     metrics::Metrics,
     other::Other,
@@ -66,6 +66,10 @@ impl Stock {
         self.other.fetch::<Profile>(&self.ticker).await;
     }
 
+    pub async fn dcf(&mut self) {
+        self.other.fetch::<AdvancedLeveredDiscountedCashFlow>(&self.ticker).await;
+    }
+
     pub async fn get_all(&mut self) {
         self.income(TimePeriod::Annual(10)).await;
         self.income(TimePeriod::Quarter(8)).await;
@@ -79,6 +83,7 @@ impl Stock {
         self.key_metrics(TimePeriod::Annual(10)).await;
         self.key_metrics_ttm().await;
         self.profile().await;
+        self.dcf().await;
     }
 
     pub async fn get_needed_data(&mut self, needed: NeededData) -> &mut Self {

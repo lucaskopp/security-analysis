@@ -7,7 +7,7 @@ use cache::get_or_add_stock;
 use clap::Parser;
 use helper_structs::ResponseCache;
 use once_cell::sync::Lazy;
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
+use std::net::{IpAddr, Ipv6Addr, SocketAddr};
 use std::ops::Deref;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -21,17 +21,17 @@ use tower_http::trace::TraceLayer;
 use crate::screener::Screener;
 
 static CACHE: Lazy<Mutex<Vec<Stock>>> = Lazy::new(|| Mutex::new(cache::state_from_json()));
-static RESPONSES: Lazy<Mutex<Vec<ResponseCache>>> = Lazy::new(|| Mutex::new(vec![]));
+static SCREENER_CACHE: Lazy<Mutex<Vec<ResponseCache>>> = Lazy::new(|| Mutex::new(vec![]));
 
 mod cache;
 mod helper_functions;
 mod helper_structs;
 mod metrics;
+mod other;
 mod screener;
 mod statements;
 mod stock;
 mod utils;
-mod other;
 
 // Setup the command line interface with clap.
 #[derive(Parser, Debug)]
@@ -120,7 +120,7 @@ async fn main() {
 
 async fn get_screener_results(Path(name): Path<String>) -> impl IntoResponse {
     if name == "Buffetology" {
-        let mut responses = RESPONSES.lock().await;
+        let mut responses = SCREENER_CACHE.lock().await;
         let endpoint_in_cache = responses.iter().find(|res| res.endpoint == name);
 
         match endpoint_in_cache {
@@ -135,7 +135,7 @@ async fn get_screener_results(Path(name): Path<String>) -> impl IntoResponse {
                 let mut stocks_from_index = Vec::new();
 
                 for i in buffetology_stocks {
-                    stocks_from_index.push(CACHE.lock().await.get(i).unwrap().to_owned());
+                    stocks_from_index.push(CACHE.lock().await.get(i).unwrap().to_owned().ticker);
                 }
 
                 println!("I GOT HERE!");
@@ -154,27 +154,10 @@ async fn get_screener_results(Path(name): Path<String>) -> impl IntoResponse {
 }
 
 async fn get_stock(Path(name): Path<String>) -> impl IntoResponse {
-    let mut responses = RESPONSES.lock().await;
-    let endpoint_in_cache = responses.iter().find(|res| res.endpoint == name);
+    let mut stock = get_or_add_stock(name.clone()).await;
+    stock.get_all().await;
 
-    match endpoint_in_cache {
-        Some(res) => {
-            println!("USING RESPONSE CACHE...");
-            return res.data.clone();
-        }
-        None => {
-            
-            let mut stock = get_or_add_stock(name.clone()).await; 
-            stock.get_all().await;
-
-            responses.push(ResponseCache {
-                endpoint: name,
-                data: Json(vec![stock.deref().to_owned()]),
-            });
-
-            return Json(vec![stock.deref().to_owned()]);
-        }
-    }
+    Json(vec![stock.deref().to_owned()])
 }
 
 async fn shutdown() {
