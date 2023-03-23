@@ -130,11 +130,14 @@ pub fn stock(StockProps { symbol }: &StockProps) -> Html {
                                 <mark>{market_cap_string(other["profile"][0]["mktCap"].as_f64().unwrap(), &ac)}</mark>
                                 {format!(" - ${} per share", ac.format_money(other["profile"][0]["price"].as_f64().unwrap()))}
                             </p>
+                            if (other["profile"][0]["price"].as_f64().unwrap() - other["dcf"][0]["equityValuePerShare"].as_f64().unwrap()).abs() / ((other["profile"][0]["price"].as_f64().unwrap() + other["dcf"][0]["equityValuePerShare"].as_f64().unwrap()) / 2.0) < 1.0 {
+
                             <p>
                                 <u>{"Intrinsic Valuation:"}</u>{" "}
                                 {market_cap_string(other["dcf"][0]["equityValue"].as_f64().unwrap(), &ac)}
                                 {format!(" - ${} per share", ac.format_money(other["dcf"][0]["equityValuePerShare"].as_f64().unwrap()))}
                             </p>
+                        }
                             <p><u>{"Exchange:"}</u>{" "}{other["profile"][0]["exchangeShortName"].as_str()}</p>
                             <p><u>{"Sector:"}</u>{" "}{other["profile"][0]["sector"].as_str()}</p>
                             <p><u>{"Industry:"}</u>{" "}{other["profile"][0]["industry"].as_str()}</p>
